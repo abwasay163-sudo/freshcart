@@ -13,14 +13,19 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API Routes
-app.use('/api/products', require('./routes/products'));
-app.use('/api/categories', (req, res) => {
+const apiRouter = express.Router();
+apiRouter.use('/products', require('./routes/products'));
+apiRouter.use('/categories', (req, res) => {
   const ProductModel = require('./models/product');
   const categories = ProductModel.getCategories();
   res.json({ success: true, data: categories });
 });
-app.use('/api/cart', require('./routes/cart'));
-app.use('/api/orders', require('./routes/orders'));
+apiRouter.use('/cart', require('./routes/cart'));
+apiRouter.use('/orders', require('./routes/orders'));
+
+// Mount the router
+app.use('/api', apiRouter);
+app.use('/.netlify/functions/api', apiRouter);
 
 // Static files and SPA fallback (only for local development)
 if (!process.env.NETLIFY) {
