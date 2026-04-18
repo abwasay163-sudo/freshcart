@@ -22,19 +22,29 @@ app.use('/api/categories', (req, res) => {
 app.use('/api/cart', require('./routes/cart'));
 app.use('/api/orders', require('./routes/orders'));
 
-// SPA fallback - serve index.html for all non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
+// Static files and SPA fallback (only for local development)
+if (!process.env.NETLIFY) {
+  // Serve static files from public directory
+  app.use(express.static(path.join(__dirname, 'public')));
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
-  🛒 ═══════════════════════════════════════════
-     FreshCart Grocery App is running!
-     
-     Local:   http://localhost:${PORT}
-     API:     http://localhost:${PORT}/api/products
-  ═══════════════════════════════════════════════
-  `);
-});
+  // SPA fallback - serve index.html for all non-API routes
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
+}
+
+// Start server if not running in a serverless environment
+if (process.env.NODE_ENV !== 'production' && !process.env.NETLIFY) {
+  app.listen(PORT, () => {
+    console.log(`
+    🛒 ═══════════════════════════════════════════
+       FreshCart Grocery App is running!
+       
+       Local:   http://localhost:${PORT}
+       API:     http://localhost:${PORT}/api/products
+    ═══════════════════════════════════════════════
+    `);
+  });
+}
+
+module.exports = app;
