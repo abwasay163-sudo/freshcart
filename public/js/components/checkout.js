@@ -47,16 +47,24 @@ const CheckoutComponent = {
           </div>
           <div class="checkout-card-body">
             <div class="checkout-items">
-              ${cart.items.map(item => `
-                <div class="checkout-item">
-                  <div class="checkout-item-left">
-                    <span class="checkout-item-emoji">${item.image}</span>
-                    <span>${item.name}</span>
-                    <span class="checkout-item-qty">×${item.quantity}</span>
+              ${cart.items.map(item => {
+                const isLocalPath = item.image && (item.image.startsWith('images/') || item.image.startsWith('/images/'));
+                const isUrl = (item.image && item.image.startsWith('http')) || isLocalPath;
+                const imageHTML = isUrl
+                  ? `<img src="${item.image}" alt="${item.name}" style="width: 24px; height: 24px; object-fit: contain;" />`
+                  : `<span class="checkout-item-emoji">${item.image}</span>`;
+                
+                return `
+                  <div class="checkout-item">
+                    <div class="checkout-item-left">
+                      ${imageHTML}
+                      <span>${item.name}</span>
+                      <span class="checkout-item-qty">×${item.quantity}</span>
+                    </div>
+                    <span class="checkout-item-price">${Utils.formatCurrency(item.price * item.quantity)}</span>
                   </div>
-                  <span class="checkout-item-price">${Utils.formatCurrency(item.price * item.quantity)}</span>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
             <div class="checkout-divider"></div>
             <div class="cart-row">
@@ -94,12 +102,20 @@ const ConfirmationComponent = {
         <p class="order-number">Order <span>#${order.id}</span></p>
         <div class="confirmation-details">
           <h3>Order Details</h3>
-          ${order.items.map(item => `
-            <div class="confirmation-item">
-              <span>${item.image} ${item.name} × ${item.quantity}</span>
-              <span>${Utils.formatCurrency(item.price * item.quantity)}</span>
-            </div>
-          `).join('')}
+          ${order.items.map(item => {
+            const isLocalPath = item.image && (item.image.startsWith('images/') || item.image.startsWith('/images/'));
+            const isUrl = (item.image && item.image.startsWith('http')) || isLocalPath;
+            const imageHTML = isUrl
+              ? `<img src="${item.image}" alt="${item.name}" style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle; margin-right: 8px;" />`
+              : `<span style="margin-right: 8px;">${item.image}</span>`;
+
+            return `
+              <div class="confirmation-item">
+                <span>${imageHTML}${item.name} × ${item.quantity}</span>
+                <span>${Utils.formatCurrency(item.price * item.quantity)}</span>
+              </div>
+            `;
+          }).join('')}
           <div class="confirmation-total-row">
             <span>Total</span>
             <span>${Utils.formatCurrency(order.total)}</span>

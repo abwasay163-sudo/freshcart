@@ -32,24 +32,32 @@ const CartComponent = {
     footerEl.style.display = 'block';
 
     // Render items
-    itemsEl.innerHTML = cart.items.map(item => `
-      <div class="cart-item" data-product-id="${item.productId}">
-        <div class="cart-item-image">${item.image}</div>
-        <div class="cart-item-info">
-          <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-price">${Utils.formatCurrency(item.price)} / ${item.unit}</div>
-        </div>
-        <div class="cart-item-actions">
-          <div class="cart-item-qty">
-            <button onclick="app.updateCart(${item.productId}, ${item.quantity - 1})">−</button>
-            <span>${item.quantity}</span>
-            <button onclick="app.updateCart(${item.productId}, ${item.quantity + 1})">+</button>
+    itemsEl.innerHTML = cart.items.map(item => {
+      const isLocalPath = item.image && (item.image.startsWith('images/') || item.image.startsWith('/images/'));
+      const isUrl = (item.image && item.image.startsWith('http')) || isLocalPath;
+      const imageHTML = isUrl
+        ? `<img src="${item.image}" alt="${item.name}" style="width: 100%; height: 100%; object-fit: contain;" />`
+        : item.image;
+
+      return `
+        <div class="cart-item" data-product-id="${item.productId}">
+          <div class="cart-item-image">${imageHTML}</div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">${Utils.formatCurrency(item.price)} / ${item.unit}</div>
           </div>
-          <div class="cart-item-total">${Utils.formatCurrency(item.price * item.quantity)}</div>
-          <button class="cart-item-remove" onclick="app.removeFromCart(${item.productId})" title="Remove">✕</button>
+          <div class="cart-item-actions">
+            <div class="cart-item-qty">
+              <button onclick="app.updateCart(${item.productId}, ${item.quantity - 1})">−</button>
+              <span>${item.quantity}</span>
+              <button onclick="app.updateCart(${item.productId}, ${item.quantity + 1})">+</button>
+            </div>
+            <div class="cart-item-total">${Utils.formatCurrency(item.price * item.quantity)}</div>
+            <button class="cart-item-remove" onclick="app.removeFromCart(${item.productId})" title="Remove">✕</button>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     // Update totals
     subtotalEl.textContent = Utils.formatCurrency(cart.subtotal);
